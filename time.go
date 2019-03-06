@@ -8,20 +8,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	Nanosecond  = Duration(time.Nanosecond)
-	Microsecond = Duration(time.Microsecond)
-	Millisecond = Duration(time.Millisecond)
-	Second      = Duration(time.Second)
-	Minute      = Duration(time.Minute)
-	Hour        = Duration(time.Hour)
-)
-
 type Time struct {
 	time.Time
 }
-
-type Duration time.Duration
 
 func Now() Time {
 	return Time{Time: time.Now().UTC()}
@@ -111,39 +100,6 @@ func (t *Time) RedisScan(src interface{}) error {
 	}
 
 	*t = Time{time.Unix(unixTime, 0)}
-
-	return nil
-}
-
-func (d Duration) Round(m Duration) Duration {
-	return Duration(time.Duration(d).Round(time.Duration(m)))
-}
-
-func (d Duration) RedisArg() interface{} {
-	return strconv.FormatInt(int64(d), 10)
-}
-
-func (d *Duration) RedisScan(src interface{}) error {
-	if src == nil {
-		return nil
-	}
-
-	var str string
-	switch val := src.(type) {
-	case []byte:
-		str = string(val)
-	case string:
-		str = val
-	default:
-		return errors.Errorf("schema.RedisScan: invalid duration: %v", src)
-	}
-
-	dur, err := strconv.ParseInt(str, 10, 64)
-	if err != nil {
-		return errors.Errorf("schema.RedisScan: invalid time: %v", str)
-	}
-
-	*d = Duration(dur)
 
 	return nil
 }

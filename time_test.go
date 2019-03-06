@@ -115,52 +115,7 @@ func TestFromString(t *testing.T) {
 
 }
 
-func TestRound(t *testing.T) {
-	for index, test := range []struct {
-		dur      Duration
-		rounder  Duration
-		expected Duration
-	}{
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Hour,
-			expected: Duration(122400000000000),
-		},
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Minute,
-			expected: Duration(123480000000000),
-		},
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Second,
-			expected: Duration(123457000000000),
-		},
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Millisecond,
-			expected: Duration(123456789000000),
-		},
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Microsecond,
-			expected: Duration(123456789101000),
-		},
-		{
-			dur:      Duration(123456789101112),
-			rounder:  Nanosecond,
-			expected: Duration(123456789101112),
-		},
-	} {
-		t.Run(fmt.Sprintf("Case %d: round %v -> %v", index+1, test.dur, test.expected), func(t *testing.T) {
-			result := test.dur.Round(test.rounder)
-			assert.Equal(t, test.expected, result)
-		})
-	}
-
-}
-
-func TestMarshalJson(t *testing.T) {
+func TestTimeMarshalJson(t *testing.T) {
 	for index, test := range []struct {
 		time          Time
 		expectedValue []byte
@@ -184,7 +139,7 @@ func TestMarshalJson(t *testing.T) {
 
 }
 
-func TestUnmarshalJson(t *testing.T) {
+func TestTimeUnmarshalJson(t *testing.T) {
 	for index, test := range []struct {
 		time          []byte
 		expectedValue Time
