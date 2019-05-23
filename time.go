@@ -1,6 +1,8 @@
 package microtime
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -101,5 +103,26 @@ func (t *Time) RedisScan(src interface{}) error {
 
 	*t = Time{time.Unix(unixTime, 0)}
 
+	return nil
+}
+
+func (t Time) Value() (driver.Value, error) {
+	if t.Time.IsZero() {
+		return nil, nil
+	}
+	return t.UTC().Round(time.Microsecond), nil
+}
+
+func (t *Time) Scan(src interface{}) error {
+	if src == nil {
+		return nil
+	}
+	
+	if srcTime, ok := src.(time.Time); ok {
+		*t = Time{srcTime.UTC()}
+	} else {
+		return fmt.Errorf("microtime: cannot convert value '%v(%T)' to microtime", src, src)
+	}
+	
 	return nil
 }
