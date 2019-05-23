@@ -1,6 +1,7 @@
 package microtime
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"testing"
 	"time"
@@ -132,6 +133,58 @@ func TestTimeMarshalJson(t *testing.T) {
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
 			result, err := test.time.MarshalJSON()
+			assert.Equal(t, test.expectedErr, err)
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
+
+}
+
+func TestTimeValue(t *testing.T) {
+	for index, test := range []struct {
+		time          Time
+		expectedValue driver.Value
+	}{
+		{
+			time:          Time{time.Time{}},
+			expectedValue: nil,
+		},
+		{
+			time:          Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.FixedZone("GMT+2", 2*60*60))},
+			expectedValue: time.Date(1987, time.February, 4, 14, 52, 19, 330000, time.UTC),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result, _ := test.time.Value()
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
+
+}
+
+func TestTimeScan(t *testing.T) {
+	for index, test := range []struct {
+		time          interface{}
+		expectedValue Time
+		expectedErr   error
+	}{
+		{
+			time:          nil,
+			expectedValue: Time{time.Time{}},
+		},
+		{
+			time:          time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.FixedZone("GMT+2", 2*60*60)),
+			expectedValue: Time{time.Date(1987, time.February, 4, 14, 52, 19, 330000, time.UTC)},
+		},
+		{
+			time:          "hello",
+			expectedValue: Time{},
+			expectedErr:   fmt.Errorf("microtime: cannot convert value 'hello(string)' to microtime"),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result := Time{}
+			err := result.Scan(test.time)
 			assert.Equal(t, test.expectedErr, err)
 			assert.Equal(t, test.expectedValue, result)
 		})
