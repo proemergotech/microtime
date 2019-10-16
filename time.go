@@ -62,6 +62,10 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (t *Time) UnmarshalParam(data string) error {
+	return t.UnmarshalJSON([]byte(data))
+}
+
 func (t *Time) MarshalBinary() (data []byte, err error) {
 	return []byte(t.String()), nil
 }
@@ -117,12 +121,12 @@ func (t *Time) Scan(src interface{}) error {
 	if src == nil {
 		return nil
 	}
-	
+
 	if srcTime, ok := src.(time.Time); ok {
 		*t = Time{srcTime.UTC()}
 	} else {
 		return fmt.Errorf("microtime: cannot convert value '%v(%T)' to microtime", src, src)
 	}
-	
+
 	return nil
 }

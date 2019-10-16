@@ -80,3 +80,7 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+func (d *Duration) UnmarshalParam(data string) error {
+	return d.UnmarshalJSON([]byte(data))
+}
