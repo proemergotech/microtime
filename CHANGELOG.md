@@ -1,5 +1,8 @@
 # Release Notes
 
+## v0.1.3 / 2019-10-16
+- add UnmarshalParam methods
+
 ## 0.1.2 / 2019-05-23
 - add sql interface support for time
 
