@@ -80,3 +80,12 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+func (d *Duration) UnmarshalParam(data string) error {
+	quotedData := data
+	if _, err := strconv.Unquote(data); err != nil {
+		quotedData = strconv.Quote(data)
+	}
+
+	return d.UnmarshalJSON([]byte(quotedData))
+}
