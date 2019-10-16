@@ -82,5 +82,5 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 }
 
 func (d *Duration) UnmarshalParam(data string) error {
-	return d.UnmarshalJSON([]byte(data))
+	return d.UnmarshalJSON([]byte(strconv.Quote(data)))
 }

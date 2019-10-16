@@ -63,7 +63,7 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 }
 
 func (t *Time) UnmarshalParam(data string) error {
-	return t.UnmarshalJSON([]byte(data))
+	return t.UnmarshalJSON([]byte(strconv.Quote(data)))
 }
 
 func (t *Time) MarshalBinary() (data []byte, err error) {
