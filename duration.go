@@ -89,3 +89,7 @@ func (d *Duration) UnmarshalParam(data string) error {
 
 	return d.UnmarshalJSON([]byte(quotedData))
 }
+
+func (d Duration) String() string {
+	return time.Duration(d).String()
+}

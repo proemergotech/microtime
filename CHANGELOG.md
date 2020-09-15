@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.1.0 / 2020-09-15
+- added String() method to Duration
+
 ## v1.0.0 / 2020-01-07
 - release version v1.0.0
 - add verify script and ci job 
