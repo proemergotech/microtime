@@ -2,6 +2,7 @@ package microtime
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -116,37 +117,13 @@ func TestFromString(t *testing.T) {
 
 }
 
-func TestTimeMarshalJson(t *testing.T) {
-	for index, test := range []struct {
-		time          Time
-		expectedValue []byte
-		expectedErr   error
-	}{
-		{
-			time:          Time{time.Time{}},
-			expectedValue: []byte("null"),
-		},
-		{
-			time:          Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.UTC)},
-			expectedValue: []byte("\"1987-02-04T16:52:19.00033Z\""),
-		},
-	} {
-		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
-			result, err := test.time.MarshalJSON()
-			assert.Equal(t, test.expectedErr, err)
-			assert.Equal(t, test.expectedValue, result)
-		})
-	}
-
-}
-
 func TestTimeValue(t *testing.T) {
 	for index, test := range []struct {
 		time          Time
 		expectedValue driver.Value
 	}{
 		{
-			time:          Time{time.Time{}},
+			time:          Time{},
 			expectedValue: nil,
 		},
 		{
@@ -170,7 +147,7 @@ func TestTimeScan(t *testing.T) {
 	}{
 		{
 			time:          nil,
-			expectedValue: Time{time.Time{}},
+			expectedValue: Time{},
 		},
 		{
 			time:          time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.FixedZone("GMT+2", 2*60*60)),
@@ -192,6 +169,36 @@ func TestTimeScan(t *testing.T) {
 
 }
 
+func TestTimeMarshalJson(t *testing.T) {
+	for index, test := range []struct {
+		time          Time
+		expectedValue []byte
+	}{
+		{
+			time:          Time{},
+			expectedValue: []byte("null"),
+		},
+		{
+			time:          Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.UTC)},
+			expectedValue: []byte(`"1987-02-04T16:52:19.00033Z"`),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result, err := json.Marshal(test.time)
+			if err != nil {
+				t.Fatalf("expected: nil, got: %v", err)
+			}
+			resultPtr, err := json.Marshal(&test.time)
+			if err != nil {
+				t.Fatalf("expected: nil, got: %v", err)
+			}
+			assert.Equal(t, test.expectedValue, result)
+			assert.Equal(t, test.expectedValue, resultPtr)
+		})
+	}
+
+}
+
 func TestTimeUnmarshalJson(t *testing.T) {
 	for index, test := range []struct {
 		time          []byte
@@ -200,26 +207,84 @@ func TestTimeUnmarshalJson(t *testing.T) {
 	}{
 		{
 			time:          []byte("null"),
-			expectedValue: Time{time.Time{}},
+			expectedValue: Time{},
 		},
 		{
-			time:          []byte("\"1987-02-04T16:52:19.00033Z\""),
+			time:          []byte(`"1987-02-04T16:52:19.00033Z"`),
 			expectedValue: Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.UTC)},
 		},
 		{
-			time:          []byte("1987-02-04T16:52:19.00033Z"),
+			time:          []byte("1987"),
 			expectedValue: Time{},
 			expectedErr:   fmt.Errorf("invalid syntax"),
 		},
 		{
-			time:          []byte("\"19870204x165n2190v0033\""),
+			time:          []byte(`"19870204x165n2190v0033"`),
 			expectedValue: Time{},
 			expectedErr:   fmt.Errorf("Could not find format for \"19870204x165n2190v0033\""),
 		},
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
 			result := Time{}
-			err := result.UnmarshalJSON(test.time)
+			err := json.Unmarshal(test.time, &result)
+			assert.Equal(t, test.expectedErr, err)
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
+
+}
+
+func TestTimeMarshalBinary(t *testing.T) {
+	for index, test := range []struct {
+		time          Time
+		expectedValue []byte
+		expectedErr   error
+	}{
+		{
+			time:          Time{},
+			expectedValue: nil,
+		},
+		{
+			time:          Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.UTC)},
+			expectedValue: []byte("1987-02-04T16:52:19.00033Z"),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result, err := test.time.MarshalBinary()
+			assert.Equal(t, test.expectedErr, err)
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
+
+}
+
+func TestTimeUnmarshalBinary(t *testing.T) {
+	for index, test := range []struct {
+		time          []byte
+		expectedValue Time
+		expectedErr   error
+	}{
+		{
+			time:          nil,
+			expectedValue: Time{},
+		},
+		{
+			time:          []byte(""),
+			expectedValue: Time{},
+		},
+		{
+			time:          []byte("1987-02-04T16:52:19.00033Z"),
+			expectedValue: Time{time.Date(1987, time.February, 4, 16, 52, 19, 330000, time.UTC)},
+		},
+		{
+			time:          []byte("19870204x165n2190v0033"),
+			expectedValue: Time{},
+			expectedErr:   fmt.Errorf("Could not find format for \"19870204x165n2190v0033\""),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result := Time{}
+			err := result.UnmarshalBinary(test.time)
 			assert.Equal(t, test.expectedErr, err)
 			assert.Equal(t, test.expectedValue, result)
 		})

@@ -71,7 +71,10 @@ func (t *Time) UnmarshalParam(data string) error {
 	return t.UnmarshalJSON([]byte(quotedData))
 }
 
-func (t *Time) MarshalBinary() (data []byte, err error) {
+func (t Time) MarshalBinary() (data []byte, err error) {
+	if t.Time.IsZero() {
+		return nil, nil
+	}
 	return []byte(t.String()), nil
 }
 
