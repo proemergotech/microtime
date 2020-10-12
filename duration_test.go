@@ -139,7 +139,7 @@ func TestDurationUnmarshalJsonErrorCases(t *testing.T) {
 		},
 		{
 			duration:    []byte(`"9223372036854775807"`),
-			expectedErr: "time: missing unit in duration 9223372036854775807",
+			expectedErr: "time: missing unit in duration \"9223372036854775807\"",
 		},
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
