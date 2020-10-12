@@ -1,5 +1,10 @@
 # Release Notes
 
+## v2.0.1 / 2020-10-12
+- fixed lib path in go.mod
+- added lint and meta.yml
+- updated to go 1.15
+
 ## v2.0.0 / 2020-10-06
 - added MarshalBinary and UnmarshalBinary methods to Duration
 - marshal zero time and duration as nil
