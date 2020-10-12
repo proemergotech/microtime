@@ -51,18 +51,16 @@ func (d *Duration) RedisScan(src interface{}) error {
 	return nil
 }
 
-func (d *Duration) MarshalJSON() ([]byte, error) {
-	if d == nil {
+func (d Duration) MarshalJSON() ([]byte, error) {
+	if d == Duration(0) {
 		return []byte("null"), nil
 	}
-	s := time.Duration(*d).String()
 
-	return []byte(strconv.Quote(s)), nil
+	return []byte(strconv.Quote(d.String())), nil
 }
 
 func (d *Duration) UnmarshalJSON(data []byte) error {
-	s := string(data)
-	if s == "null" {
+	if string(data) == "null" {
 		return nil
 	}
 
@@ -88,6 +86,28 @@ func (d *Duration) UnmarshalParam(data string) error {
 	}
 
 	return d.UnmarshalJSON([]byte(quotedData))
+}
+
+func (d Duration) MarshalBinary() (data []byte, err error) {
+	if d == Duration(0) {
+		return nil, nil
+	}
+	return []byte(d.String()), nil
+}
+
+func (d *Duration) UnmarshalBinary(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	duration, err := time.ParseDuration(string(data))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	*d = Duration(duration)
+
+	return nil
 }
 
 func (d Duration) String() string {

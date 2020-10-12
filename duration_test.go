@@ -1,6 +1,7 @@
 package microtime
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -59,23 +60,28 @@ func TestDurationMarshalJson(t *testing.T) {
 	}{
 		{
 			duration:      Duration(0),
-			expectedValue: []byte("\"0s\""),
+			expectedValue: []byte("null"),
 		},
 		{
 			duration:      Duration(-1 << 63),
-			expectedValue: []byte("\"-2562047h47m16.854775808s\""),
+			expectedValue: []byte(`"-2562047h47m16.854775808s"`),
 		},
 		{
 			duration:      Duration(1<<63 - 1),
-			expectedValue: []byte("\"2562047h47m16.854775807s\""),
+			expectedValue: []byte(`"2562047h47m16.854775807s"`),
 		},
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
-			result, err := test.duration.MarshalJSON()
+			result, err := json.Marshal(test.duration)
+			if err != nil {
+				t.Fatalf("expected: nil, got: %v", err)
+			}
+			resultPtr, err := json.Marshal(&test.duration)
 			if err != nil {
 				t.Fatalf("expected: nil, got: %v", err)
 			}
 			assert.Equal(t, test.expectedValue, result)
+			assert.Equal(t, test.expectedValue, resultPtr)
 		})
 	}
 
@@ -87,25 +93,29 @@ func TestDurationUnmarshalJson(t *testing.T) {
 		expectedValue Duration
 	}{
 		{
-			duration:      []byte("\"0\""),
+			duration:      []byte("null"),
+			expectedValue: Duration(-1),
+		},
+		{
+			duration:      []byte(`"0"`),
 			expectedValue: Duration(0),
 		},
 		{
-			duration:      []byte("\"10s\""),
+			duration:      []byte(`"10s"`),
 			expectedValue: Second * 10,
 		},
 		{
-			duration:      []byte("\"10m\""),
+			duration:      []byte(`"10m"`),
 			expectedValue: Minute * 10,
 		},
 		{
-			duration:      []byte("\"10h\""),
+			duration:      []byte(`"10h"`),
 			expectedValue: Hour * 10,
 		},
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
 			result := Duration(-1)
-			err := result.UnmarshalJSON(test.duration)
+			err := json.Unmarshal(test.duration, &result)
 			if err != nil {
 				t.Fatalf("expected: nil, got: %v", err)
 			}
@@ -120,19 +130,89 @@ func TestDurationUnmarshalJsonErrorCases(t *testing.T) {
 		expectedErr string
 	}{
 		{
+			duration:    nil,
+			expectedErr: "unexpected end of JSON input",
+		},
+		{
 			duration:    []byte("-9223372036854775808"),
 			expectedErr: "duration must be valid json string: invalid syntax",
 		},
 		{
-			duration:    []byte("\"9223372036854775807\""),
+			duration:    []byte(`"9223372036854775807"`),
 			expectedErr: "time: missing unit in duration 9223372036854775807",
 		},
 	} {
 		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
 			result := Duration(-1)
-			err := result.UnmarshalJSON(test.duration)
+			err := json.Unmarshal(test.duration, &result)
 			assert.Equal(t, test.expectedErr, err.Error())
 		})
 	}
 
+}
+
+func TestDurationMarshalBinary(t *testing.T) {
+	for index, test := range []struct {
+		duration      Duration
+		expectedValue []byte
+	}{
+		{
+			duration:      Duration(0),
+			expectedValue: nil,
+		},
+		{
+			duration:      Duration(-1 << 63),
+			expectedValue: []byte("-2562047h47m16.854775808s"),
+		},
+		{
+			duration:      Duration(1<<63 - 1),
+			expectedValue: []byte("2562047h47m16.854775807s"),
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result, err := test.duration.MarshalBinary()
+			if err != nil {
+				t.Fatalf("expected: nil, got: %v", err)
+			}
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
+
+}
+
+func TestDurationUnmarshalBinary(t *testing.T) {
+	for index, test := range []struct {
+		duration      []byte
+		expectedValue Duration
+	}{
+		{
+			duration:      nil,
+			expectedValue: Duration(-1),
+		},
+		{
+			duration:      []byte("0"),
+			expectedValue: Duration(0),
+		},
+		{
+			duration:      []byte("10s"),
+			expectedValue: Second * 10,
+		},
+		{
+			duration:      []byte("10m"),
+			expectedValue: Minute * 10,
+		},
+		{
+			duration:      []byte("10h"),
+			expectedValue: Hour * 10,
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", index+1), func(t *testing.T) {
+			result := Duration(-1)
+			err := result.UnmarshalBinary(test.duration)
+			if err != nil {
+				t.Fatalf("expected: nil, got: %v", err)
+			}
+			assert.Equal(t, test.expectedValue, result)
+		})
+	}
 }

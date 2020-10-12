@@ -1,5 +1,9 @@
 # Release Notes
 
+## v2.0.0 / 2020-10-06
+- added MarshalBinary and UnmarshalBinary methods to Duration
+- marshal zero time and duration as nil
+
 ## v1.1.0 / 2020-09-15
 - added String() method to Duration
 
