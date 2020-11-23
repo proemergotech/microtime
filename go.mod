@@ -1,4 +1,4 @@
-module gitlab.com/proemergotech/microtime-go/v2
+module github.com/proemergotech/microtime/v2
 
 go 1.15
 

@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.0.2 / 2020-11-23
+- migrated to github
+
 ## v2.0.1 / 2020-10-12
 - fixed lib path in go.mod
 - added lint and meta.yml
