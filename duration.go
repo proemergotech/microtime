@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/proemergotech/errors/v2"
 )
 
 const (

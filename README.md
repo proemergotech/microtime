@@ -1,1 +1,1 @@
-# Microtime support for go projects
+[![Go Reference](https://pkg.go.dev/badge/github.com/proemergotech/microtime.svg)](https://pkg.go.dev/github.com/proemergotech/microtime)
