@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/araddon/dateparse"
-	"github.com/pkg/errors"
+	"github.com/proemergotech/errors/v2"
 )
 
 type Time struct {

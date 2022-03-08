@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.0 / 2022-03-08
+- sync with gitlab
+
 ## v2.0.2 / 2020-11-23
 - migrated to github
 
